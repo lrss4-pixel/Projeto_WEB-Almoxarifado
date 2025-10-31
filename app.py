@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
-from flask_pymysql import PyMySQL # Importe a biblioteca
+from flask_mysql_connector import MySQL  # Importe a biblioteca (CORRIGIDO)
 
 app = Flask(__name__)
 app.secret_key = 'chave_secreta_muito_segura'
@@ -7,13 +7,12 @@ app.secret_key = 'chave_secreta_muito_segura'
 # --- CONFIGURAÇÃO DO BANCO DE DADOS MYSQL ---
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'SUA_SENHA_AQUI' # <-- COLOQUE A SENHA QUE VOCÊ CRIOU
+app.config['MYSQL_PASSWORD'] = 'SUA_SENHA_AQUI'  # <-- COLOQUE A SENHA QUE VOCÊ CRIOU
 app.config['MYSQL_DB'] = 'almoxarifado_db'
-app.config['MYSQL_CURSORCLASS'] = 'DictCursor' # Retorna resultados como dicionários
+app.config['MYSQL_CURSORCLASS'] = 'DictCursor'  # Retorna resultados como dicionários
 
-mysql = PyMySQL(app)
+mysql = MySQL(app)  # Inicialização (CORRIGIDO)
 
-# --- ROTAS PRINCIPAIS ---
 # --- ROTAS PRINCIPAIS ---
 
 # 1. Dashboard / Tela Inicial
@@ -65,7 +64,7 @@ def adicionar_produto():
             "INSERT INTO produtos (nome, quantidade, localizacao, estoque_min) VALUES (%s, %s, %s, %s)",
             (nome, quantidade, localizacao, estoque_min)
         )
-        mysql.connection.commit() # Salva as alterações
+        mysql.connection.commit()  # Salva as alterações
         cursor.close()
         
         flash(f'Produto "{nome}" adicionado com sucesso!', 'success')
