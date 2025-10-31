@@ -1,42 +1,57 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
+from flask_pymysql import PyMySQL # Importe a biblioteca
 
 app = Flask(__name__)
-app.secret_key = 'chave_secreta_muito_segura'  # Necessário para usar 'flash' (mensagens)
+app.secret_key = 'chave_secreta_muito_segura'
 
-# --- SIMULAÇÃO DE BANCO DE DADOS (Substitua por um SGBD real, como SQLite/PostgreSQL, no futuro) ---
-produtos = [
-    {'id': 1, 'nome': 'Parafuso Sextavado M10', 'quantidade': 1500, 'localizacao': 'A1-01', 'estoque_min': 500},
-    {'id': 2, 'nome': 'Óleo Lubrificante 5L', 'quantidade': 50, 'localizacao': 'B2-05', 'estoque_min': 20},
-    {'id': 3, 'nome': 'Luvas de Couro', 'quantidade': 5, 'localizacao': 'C3-10', 'estoque_min': 100},
-]
-next_id = 4 # Próximo ID a ser usado
+# --- CONFIGURAÇÃO DO BANCO DE DADOS MYSQL ---
+app.config['MYSQL_HOST'] = 'localhost'
+app.config['MYSQL_USER'] = 'root'
+app.config['MYSQL_PASSWORD'] = 'SUA_SENHA_AQUI' # <-- COLOQUE A SENHA QUE VOCÊ CRIOU
+app.config['MYSQL_DB'] = 'almoxarifado_db'
+app.config['MYSQL_CURSORCLASS'] = 'DictCursor' # Retorna resultados como dicionários
 
+mysql = PyMySQL(app)
+
+# --- ROTAS PRINCIPAIS ---
 # --- ROTAS PRINCIPAIS ---
 
 # 1. Dashboard / Tela Inicial
 @app.route('/')
 def dashboard():
     """Exibe o dashboard/resumo do almoxarifado."""
-    # Lógica para calcular indicadores
-    total_itens = sum(p['quantidade'] for p in produtos)
-    estoque_baixo = [p for p in produtos if p['quantidade'] < p['estoque_min']]
+    conn = mysql.connection
+    cursor = conn.cursor()
     
-    return render_template('almoxarifado_dashboard.html', 
-                           produtos=produtos,
+    # Lógica para calcular indicadores com SQL
+    cursor.execute("SELECT SUM(quantidade) as total FROM produtos")
+    total_itens_result = cursor.fetchone()
+    total_itens = total_itens_result['total'] if total_itens_result['total'] else 0
+    
+    cursor.execute("SELECT COUNT(id) as count FROM produtos WHERE quantidade < estoque_min")
+    estoque_baixo_result = cursor.fetchone()
+    estoque_baixo_count = estoque_baixo_result['count']
+    
+    cursor.close()
+    
+    return render_template('almoxarifado_dashboard.html',
                            total_itens=total_itens,
-                           estoque_baixo_count=len(estoque_baixo))
+                           estoque_baixo_count=estoque_baixo_count)
 
 # 2. Listar Todos os Produtos
 @app.route('/estoque')
 def listar_produtos():
     """Exibe a lista completa de produtos."""
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT * FROM produtos ORDER BY nome")
+    produtos = cursor.fetchall()
+    cursor.close()
     return render_template('listar_produtos.html', produtos=produtos)
 
 # 3. Adicionar Novo Produto (GET para formulário, POST para salvar)
 @app.route('/adicionar', methods=['GET', 'POST'])
 def adicionar_produto():
     """Adiciona um novo produto ao estoque."""
-    global next_id
     if request.method == 'POST':
         # Captura os dados do formulário
         nome = request.form['nome']
@@ -44,59 +59,78 @@ def adicionar_produto():
         localizacao = request.form['localizacao']
         estoque_min = int(request.form['estoque_min'])
         
-        # Cria o novo produto
-        novo_produto = {
-            'id': next_id,
-            'nome': nome,
-            'quantidade': quantidade,
-            'localizacao': localizacao,
-            'estoque_min': estoque_min
-        }
-        produtos.append(novo_produto)
-        next_id += 1
+        # Conecta e executa a inserção no banco
+        cursor = mysql.connection.cursor()
+        cursor.execute(
+            "INSERT INTO produtos (nome, quantidade, localizacao, estoque_min) VALUES (%s, %s, %s, %s)",
+            (nome, quantidade, localizacao, estoque_min)
+        )
+        mysql.connection.commit() # Salva as alterações
+        cursor.close()
         
         flash(f'Produto "{nome}" adicionado com sucesso!', 'success')
         return redirect(url_for('listar_produtos'))
         
-    # Se for GET, apenas exibe o formulário
     return render_template('adicionar_produto.html')
 
 # 4. Editar Produto (GET para formulário, POST para salvar)
 @app.route('/editar/<int:produto_id>', methods=['GET', 'POST'])
 def editar_produto(produto_id):
     """Edita um produto existente."""
-    produto = next((p for p in produtos if p['id'] == produto_id), None)
+    cursor = mysql.connection.cursor()
+    
+    if request.method == 'POST':
+        # Captura os dados do form
+        nome = request.form['nome']
+        quantidade = int(request.form['quantidade'])
+        localizacao = request.form['localizacao']
+        estoque_min = int(request.form['estoque_min'])
+        
+        # Executa o UPDATE no banco
+        cursor.execute(
+            """
+            UPDATE produtos 
+            SET nome=%s, quantidade=%s, localizacao=%s, estoque_min=%s
+            WHERE id=%s
+            """,
+            (nome, quantidade, localizacao, estoque_min, produto_id)
+        )
+        mysql.connection.commit()
+        cursor.close()
+        
+        flash(f'Produto "{nome}" atualizado com sucesso!', 'info')
+        return redirect(url_for('listar_produtos'))
+    
+    # Se for GET, busca o produto para preencher o formulário
+    cursor.execute("SELECT * FROM produtos WHERE id = %s", (produto_id,))
+    produto = cursor.fetchone()
+    cursor.close()
     
     if produto is None:
         flash('Produto não encontrado.', 'error')
         return redirect(url_for('listar_produtos'))
-
-    if request.method == 'POST':
-        # Atualiza os dados do produto
-        produto['nome'] = request.form['nome']
-        produto['quantidade'] = int(request.form['quantidade'])
-        produto['localizacao'] = request.form['localizacao']
-        produto['estoque_min'] = int(request.form['estoque_min'])
         
-        flash(f'Produto "{produto["nome"]}" atualizado com sucesso!', 'info')
-        return redirect(url_for('listar_produtos'))
-        
-    # Se for GET, exibe o formulário preenchido
     return render_template('editar_produto.html', produto=produto)
 
 # 5. Remover Produto
 @app.route('/remover/<int:produto_id>', methods=['POST'])
 def remover_produto(produto_id):
     """Remove um produto do estoque."""
-    global produtos
-    produto_a_remover = next((p for p in produtos if p['id'] == produto_id), None)
+    cursor = mysql.connection.cursor()
     
-    if produto_a_remover:
-        produtos = [p for p in produtos if p['id'] != produto_id] # Recria a lista sem o produto
-        flash(f'Produto "{produto_a_remover["nome"]}" removido com sucesso!', 'danger')
-        
-    return redirect(url_for('listar_produtos'))
+    # Para a mensagem flash, pegamos o nome antes de deletar
+    cursor.execute("SELECT nome FROM produtos WHERE id = %s", (produto_id,))
+    produto = cursor.fetchone()
 
+    if produto:
+        cursor.execute("DELETE FROM produtos WHERE id = %s", (produto_id,))
+        mysql.connection.commit()
+        flash(f'Produto "{produto["nome"]}" removido com sucesso!', 'danger')
+    else:
+        flash('Produto não encontrado.', 'error')
+
+    cursor.close()
+    return redirect(url_for('listar_produtos'))
 
 if __name__ == '__main__':
     # Em um ambiente de produção real, você usaria um servidor WSGI
