@@ -47,7 +47,8 @@ def get_dados_comuns():
 def dashboard():
     """Exibe o dashboard E a lista de produtos."""
     dados_comuns = get_dados_comuns()
-    return render_template('dashboard_crud.html', **dados_comuns)
+    # CORRIGIDO: renderiza o seu arquivo original
+    return render_template('almoxarifado_dashboard.html', **dados_comuns)
 
 # 2. Rota de Estoque (apenas redireciona para o dashboard)
 @app.route('/estoque')
@@ -120,8 +121,10 @@ def editar_produto(produto_id):
         
     # Pega os dados comuns (cards, lista de produtos) E passa o produto a ser editado
     dados_comuns = get_dados_comuns()
+    
+    # CORRIGIDO: renderiza o seu arquivo original
     return render_template(
-        'dashboard_crud.html', 
+        'almoxarifado_dashboard.html', 
         **dados_comuns, 
         produto_para_editar=produto_para_editar
     )
