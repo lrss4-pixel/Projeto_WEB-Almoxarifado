@@ -13,16 +13,13 @@ app.config['MYSQL_CURSORCLASS'] = 'DictCursor'  # Retorna resultados como dicion
 
 mysql = MySQL(app)  # Inicialização (CORRIGIDO)
 
-# --- ROTAS PRINCIPAIS ---
-
-# 1. Dashboard / Tela Inicial
-@app.route('/')
-def dashboard():
-    """Exibe o dashboard/resumo do almoxarifado."""
+# --- FUNÇÃO HELPER PARA OBTER DADOS COMUNS ---
+# Para evitar repetição, buscamos os dados do dashboard e a lista de produtos
+def get_dados_comuns():
     conn = mysql.connection
     cursor = conn.cursor()
     
-    # Lógica para calcular indicadores com SQL
+    # 1. Dados do Dashboard
     cursor.execute("SELECT SUM(quantidade) as total FROM produtos")
     total_itens_result = cursor.fetchone()
     total_itens = total_itens_result['total'] if total_itens_result['total'] else 0
@@ -31,24 +28,35 @@ def dashboard():
     estoque_baixo_result = cursor.fetchone()
     estoque_baixo_count = estoque_baixo_result['count']
     
-    cursor.close()
-    
-    return render_template('almoxarifado_dashboard.html',
-                           total_itens=total_itens,
-                           estoque_baixo_count=estoque_baixo_count)
-
-# 2. Listar Todos os Produtos
-@app.route('/estoque')
-def listar_produtos():
-    """Exibe a lista completa de produtos."""
-    cursor = mysql.connection.cursor()
+    # 2. Lista de Produtos
     cursor.execute("SELECT * FROM produtos ORDER BY nome")
     produtos = cursor.fetchall()
+    
     cursor.close()
-    return render_template('listar_produtos.html', produtos=produtos)
+    
+    return {
+        'total_itens': total_itens,
+        'estoque_baixo_count': estoque_baixo_count,
+        'produtos': produtos
+    }
 
-# 3. Adicionar Novo Produto (GET para formulário, POST para salvar)
-@app.route('/adicionar', methods=['GET', 'POST'])
+# --- ROTAS PRINCIPAIS ---
+
+# 1. Dashboard / Listagem / Página Principal
+@app.route('/')
+def dashboard():
+    """Exibe o dashboard E a lista de produtos."""
+    dados_comuns = get_dados_comuns()
+    return render_template('dashboard_crud.html', **dados_comuns)
+
+# 2. Rota de Estoque (apenas redireciona para o dashboard)
+@app.route('/estoque')
+def listar_produtos():
+    """Redireciona para o dashboard, que agora contém a lista."""
+    return redirect(url_for('dashboard'))
+
+# 3. Adicionar Novo Produto (Apenas POST, o formulário está no dashboard)
+@app.route('/adicionar', methods=['POST'])
 def adicionar_produto():
     """Adiciona um novo produto ao estoque."""
     if request.method == 'POST':
@@ -68,9 +76,9 @@ def adicionar_produto():
         cursor.close()
         
         flash(f'Produto "{nome}" adicionado com sucesso!', 'success')
-        return redirect(url_for('listar_produtos'))
-        
-    return render_template('adicionar_produto.html')
+    
+    # Redireciona de volta para a página principal
+    return redirect(url_for('dashboard'))
 
 # 4. Editar Produto (GET para formulário, POST para salvar)
 @app.route('/editar/<int:produto_id>', methods=['GET', 'POST'])
@@ -98,18 +106,25 @@ def editar_produto(produto_id):
         cursor.close()
         
         flash(f'Produto "{nome}" atualizado com sucesso!', 'info')
-        return redirect(url_for('listar_produtos'))
+        # Redireciona para o dashboard principal após editar
+        return redirect(url_for('dashboard'))
     
-    # Se for GET, busca o produto para preencher o formulário
+    # Se for GET, busca o produto para preencher o formulário DE EDIÇÃO
     cursor.execute("SELECT * FROM produtos WHERE id = %s", (produto_id,))
-    produto = cursor.fetchone()
+    produto_para_editar = cursor.fetchone()
     cursor.close()
     
-    if produto is None:
+    if produto_para_editar is None:
         flash('Produto não encontrado.', 'error')
-        return redirect(url_for('listar_produtos'))
+        return redirect(url_for('dashboard'))
         
-    return render_template('editar_produto.html', produto=produto)
+    # Pega os dados comuns (cards, lista de produtos) E passa o produto a ser editado
+    dados_comuns = get_dados_comuns()
+    return render_template(
+        'dashboard_crud.html', 
+        **dados_comuns, 
+        produto_para_editar=produto_para_editar
+    )
 
 # 5. Remover Produto
 @app.route('/remover/<int:produto_id>', methods=['POST'])
@@ -129,8 +144,9 @@ def remover_produto(produto_id):
         flash('Produto não encontrado.', 'error')
 
     cursor.close()
-    return redirect(url_for('listar_produtos'))
+    return redirect(url_for('dashboard'))
 
 if __name__ == '__main__':
     # Em um ambiente de produção real, você usaria um servidor WSGI
     app.run(debug=True)
+
