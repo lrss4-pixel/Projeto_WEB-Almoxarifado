@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
-from flask_mysql_connector import MySQL  # Importe a biblioteca (CORRIGIDO)
+from flask_mysql_connector import MySQL  
 import os # <-- ADICIONADO PARA LER VARIÁVEIS DE AMBIENTE DO CLOUD9
 
 app = Flask(__name__)
@@ -8,7 +8,7 @@ app.secret_key = 'chave_secreta_muito_segura'
 # --- CONFIGURAÇÃO DO BANCO DE DADOS MYSQL ---
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'SUA_SENHA_AQUI'  # <-- COLOQUE A SENHA QUE VOCÊ CRIOU
+app.config['MYSQL_PASSWORD'] = ''  # SEM SENHA !!!!!! N POR SENHA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! N PODE TER SENHA!!!! CONFIGUROU O BANCO SEM SENHA DIRETO NA AWS!
 app.config['MYSQL_DB'] = 'almoxarifado_db'
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'  # Retorna resultados como dicionários
 
@@ -136,7 +136,7 @@ def remover_produto(produto_id):
     """Remove um produto do estoque."""
     cursor = mysql.connection.cursor()
     
-    # Para a mensagem flash, pegamos o nome antes de deletar
+    # flash
     cursor.execute("SELECT nome FROM produtos WHERE id = %s", (produto_id,))
     produto = cursor.fetchone()
 
@@ -151,11 +151,8 @@ def remover_produto(produto_id):
     return redirect(url_for('dashboard'))
 
 if __name__ == '__main__':
-    # Em um ambiente de produção real, você usaria um servidor WSGI
-    # A linha abaixo foi modificada para funcionar com o Preview do AWS Cloud9
     app.run(
         host=os.environ.get('IP', '0.0.0.0'),
         port=int(os.environ.get('PORT', 8080)),
         debug=True
     )
-
