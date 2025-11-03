@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_mysql_connector import MySQL  # Importe a biblioteca (CORRIGIDO)
+import os # <-- ADICIONADO PARA LER VARIÁVEIS DE AMBIENTE DO CLOUD9
 
 app = Flask(__name__)
 app.secret_key = 'chave_secreta_muito_segura'
@@ -151,5 +152,10 @@ def remover_produto(produto_id):
 
 if __name__ == '__main__':
     # Em um ambiente de produção real, você usaria um servidor WSGI
-    app.run(debug=True)
+    # A linha abaixo foi modificada para funcionar com o Preview do AWS Cloud9
+    app.run(
+        host=os.environ.get('IP', '0.0.0.0'),
+        port=int(os.environ.get('PORT', 8080)),
+        debug=True
+    )
 
