@@ -13,7 +13,17 @@
         .form-container h2 { margin-top: 0; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-        .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        .form-group input, .form-group select { /* Adicionado select */
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid #ccc; 
+            border-radius: 5px; 
+            box-sizing: border-box; 
+            /* Garante que o select tenha a mesma aparência */
+            background-color: white; 
+            font-family: inherit;
+            font-size: inherit;
+        }
         .btn-submit { background-color: #2ecc71; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; }
         .btn-update { background-color: #3498db; }
         .btn-cancel { background-color: #95a5a6; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; text-decoration: none; margin-left: 10px; }
@@ -45,12 +55,13 @@
         </div>
         <nav>
             <ul>
+                <!-- Dashboard/Estoque é a página atual -->
                 <li class="active"><a href="{{ url_for('dashboard') }}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                <!-- O link 'Estoque' agora aponta para o dashboard, pois a lista está aqui -->
                 <li><a href="{{ url_for('dashboard') }}"><i class="fas fa-boxes"></i> Estoque</a></li>
                 <li><a href="#"><i class="fas fa-truck-loading"></i> Entradas/Recebimento</a></li>
                 <li><a href="#"><i class="fas fa-dolly"></i> Saídas/Requisição</a></li>
-                <li><a href="#"><i class="fas fa-users"></i> Fornecedores</a></li>
+                <!-- Link de Fornecedores ATUALIZADO -->
+                <li><a href="{{ url_for('fornecedores_crud') }}"><i class="fas fa-users"></i> Fornecedores</a></li>
                 <li><a href="#"><i class="fas fa-cogs"></i> Configurações</a></li>
             </ul>
         </nav>
@@ -59,7 +70,8 @@
     <div class="main-content">
         <header class="header">
             <h1>Sistema de Almoxarifado</h1>
-            <div class="user-info">Usuário: Admin | <a href="#">Sair</a></div>
+            <!-- ATUALIZADO: Mostra o usuário logado e o link de Sair -->
+            <div class="user-info">Usuário: {{ current_user.nome }} | <a href="{{ url_for('logout') }}">Sair</a></div>
         </header>
 
         <main>
@@ -87,9 +99,9 @@
             </div>
 
             <!-- 
-              SEÇÃO 2: FORMULÁRIOS DE CRUD 
-              Usamos um IF para mostrar o formulário de Edição (se estivermos editando)
-              ou o formulário de Adição (se não estivermos).
+                SEÇÃO 2: FORMULÁRIOS DE CRUD 
+                Usamos um IF para mostrar o formulário de Edição (se estivermos editando)
+                ou o formulário de Adição (se não estivermos).
             -->
             {% if produto_para_editar %}
             <!-- Formulário de EDIÇÃO -->
@@ -111,6 +123,18 @@
                     <div class="form-group">
                         <label for="estoque_min">Estoque Mínimo</label>
                         <input type="number" id="estoque_min" name="estoque_min" value="{{ produto_para_editar.estoque_min }}" required>
+                    </div>
+                    <!-- NOVO: Dropdown de Fornecedor (Edição) -->
+                    <div class="form-group">
+                        <label for="fornecedor_id">Fornecedor</label>
+                        <select id="fornecedor_id" name="fornecedor_id">
+                            <option value="0">-- Nenhum --</option>
+                            {% for f in fornecedores %}
+                                <option value="{{ f.id }}" {% if produto_para_editar.fornecedor_id == f.id %}selected{% endif %}>
+                                    {{ f.nome }}
+                                </option>
+                            {% endfor %}
+                        </select>
                     </div>
                     <div>
                         <button type="submit" class="btn-submit btn-update">Atualizar Produto</button>
@@ -139,6 +163,16 @@
                         <label for="estoque_min">Estoque Mínimo</label>
                         <input type="number" id="estoque_min" name="estoque_min" value="10" required>
                     </div>
+                    <!-- NOVO: Dropdown de Fornecedor (Adição) -->
+                    <div class="form-group">
+                        <label for="fornecedor_id">Fornecedor</label>
+                        <select id="fornecedor_id" name="fornecedor_id">
+                            <option value="0">-- Nenhum --</option>
+                            {% for f in fornecedores %}
+                                <option value="{{ f.id }}">{{ f.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
                     <div>
                         <button type="submit" class="btn-submit">Salvar Novo Produto</button>
                     </div>
@@ -157,6 +191,7 @@
                             <th>Nome</th>
                             <th>Quantidade</th>
                             <th>Localização</th>
+                            <th>Fornecedor</th> <!-- NOVA COLUNA -->
                             <th>Estoque Mín.</th>
                             <th>Ações</th>
                         </tr>
@@ -169,6 +204,8 @@
                             <td>{{ produto.nome }}</td>
                             <td>{{ produto.quantidade }}</td>
                             <td>{{ produto.localizacao }}</td>
+                            <!-- NOVO: Exibe o nome do fornecedor (ou 'N/D') -->
+                            <td>{{ produto.fornecedor_nome | default('N/D') }}</td>
                             <td>{{ produto.estoque_min }}</td>
                             <td class="actions">
                                 <!-- Link "Editar" agora aponta para a rota de edição -->
