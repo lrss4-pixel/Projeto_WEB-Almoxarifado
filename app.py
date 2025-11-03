@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
-from flask_mysql_connector import MySQL  
+from flask_mysql_connector import MySQL  # Importe a biblioteca (CORRIGIDO)
 import os # <-- ADICIONADO PARA LER VARIÁVEIS DE AMBIENTE DO CLOUD9
 
 app = Flask(__name__)
@@ -8,17 +8,22 @@ app.secret_key = 'chave_secreta_muito_segura'
 # --- CONFIGURAÇÃO DO BANCO DE DADOS MYSQL ---
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'admin123'  # tem que ser essa senha bug do auth automatico
+app.config['MYSQL_PASSWORD'] = 'admin123'  # 
 app.config['MYSQL_DB'] = 'almoxarifado_db'
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'  # Retorna resultados como dicionários
 
-mysql = MySQL(app)  # Inicialização (CORRIGIDO)
+mysql = MySQL(app)  #
 
 # --- FUNÇÃO HELPER PARA OBTER DADOS COMUNS ---
 # Para evitar repetição, buscamos os dados do dashboard e a lista de produtos
 def get_dados_comuns():
     conn = mysql.connection
     cursor = conn.cursor()
+    
+    # --- CORREÇÃO DEFINITIVA ---
+    # Força a seleção do banco de dados para esta conexão
+    cursor.execute("USE almoxarifado_db")
+    # --- FIM DA CORREÇÃO ---
     
     # 1. Dados do Dashboard
     cursor.execute("SELECT SUM(quantidade) as total FROM produtos")
@@ -136,7 +141,7 @@ def remover_produto(produto_id):
     """Remove um produto do estoque."""
     cursor = mysql.connection.cursor()
     
-    # flash
+    # Para a mensagem flash, pegamos o nome antes de deletar
     cursor.execute("SELECT nome FROM produtos WHERE id = %s", (produto_id,))
     produto = cursor.fetchone()
 
@@ -151,6 +156,8 @@ def remover_produto(produto_id):
     return redirect(url_for('dashboard'))
 
 if __name__ == '__main__':
+    # Em um ambiente de produção real, você usaria um servidor WSGI
+    # A linha abaixo foi modificada para funcionar com o Preview do AWS Cloud9
     app.run(
         host=os.environ.get('IP', '0.0.0.0'),
         port=int(os.environ.get('PORT', 8080)),
