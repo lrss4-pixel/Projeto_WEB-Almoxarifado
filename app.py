@@ -8,21 +8,22 @@ app.secret_key = 'chave_secreta_muito_segura'
 # --- CONFIGURAÇÃO DO BANCO DE DADOS MYSQL ---
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'admin123'  # 
+app.config['MYSQL_PASSWORD'] = 'admin123'  # <-- COLOQUE A SENHA QUE VOCÊ CRIOU
 app.config['MYSQL_DB'] = 'almoxarifado_db'
-app.config['MYSQL_CURSORCLASS'] = 'DictCursor'  # Retorna resultados como dicionários
+# A linha 'MYSQL_CURSORCLASS' foi removida pois não é usada por esta biblioteca
 
-mysql = MySQL(app)  #
+mysql = MySQL(app)  # Inicialização (CORRIGIDO)
 
 # --- FUNÇÃO HELPER PARA OBTER DADOS COMUNS ---
 # Para evitar repetição, buscamos os dados do dashboard e a lista de produtos
 def get_dados_comuns():
     conn = mysql.connection
-    cursor = conn.cursor()
+    # CORREÇÃO: Solicita um cursor que retorna dicionários
+    cursor = conn.cursor(dictionary=True) 
     
-    # --- CORREÇÃO DEFINITIVA ---
+    # --- CORREÇÃO DEFINITIVA (RE-ADICIONADA) ---
     # Força a seleção do banco de dados para esta conexão
-    cursor.execute("USE almoxarifado_db")
+    cursor.execute("USE almoxarifado_db") 
     # --- FIM DA CORREÇÃO ---
     
     # 1. Dados do Dashboard
@@ -74,7 +75,9 @@ def adicionar_produto():
         estoque_min = int(request.form['estoque_min'])
         
         # Conecta e executa a inserção no banco
-        cursor = mysql.connection.cursor()
+        # CORREÇÃO: Solicita um cursor que retorna dicionários
+        cursor = mysql.connection.cursor(dictionary=True)
+        cursor.execute("USE almoxarifado_db") # <-- CORREÇÃO ADICIONADA
         cursor.execute(
             "INSERT INTO produtos (nome, quantidade, localizacao, estoque_min) VALUES (%s, %s, %s, %s)",
             (nome, quantidade, localizacao, estoque_min)
@@ -91,7 +94,9 @@ def adicionar_produto():
 @app.route('/editar/<int:produto_id>', methods=['GET', 'POST'])
 def editar_produto(produto_id):
     """Edita um produto existente."""
-    cursor = mysql.connection.cursor()
+    # CORREÇÃO: Solicita um cursor que retorna dicionários
+    cursor = mysql.connection.cursor(dictionary=True)
+    cursor.execute("USE almoxarifado_db") # <-- CORREÇÃO ADICIONADA
     
     if request.method == 'POST':
         # Captura os dados do form
@@ -139,7 +144,9 @@ def editar_produto(produto_id):
 @app.route('/remover/<int:produto_id>', methods=['POST'])
 def remover_produto(produto_id):
     """Remove um produto do estoque."""
-    cursor = mysql.connection.cursor()
+    # CORREÇÃO: Solicita um cursor que retorna dicionários
+    cursor = mysql.connection.cursor(dictionary=True)
+    cursor.execute("USE almoxarifado_db") # <-- CORREÇÃO ADICIONADA
     
     # Para a mensagem flash, pegamos o nome antes de deletar
     cursor.execute("SELECT nome FROM produtos WHERE id = %s", (produto_id,))
