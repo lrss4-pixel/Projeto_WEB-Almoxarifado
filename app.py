@@ -8,7 +8,7 @@ app.secret_key = 'chave_secreta_muito_segura'
 # --- CONFIGURAÇÃO DO BANCO DE DADOS MYSQL ---
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = ''  # SEM SENHA !!!!!! N POR SENHA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! N PODE TER SENHA!!!! CONFIGUROU O BANCO SEM SENHA DIRETO NA AWS!
+app.config['MYSQL_PASSWORD'] = 'admin123'  # tem que ser essa senha bug do auth automatico
 app.config['MYSQL_DB'] = 'almoxarifado_db'
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'  # Retorna resultados como dicionários
 
