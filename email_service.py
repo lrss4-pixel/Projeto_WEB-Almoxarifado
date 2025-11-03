@@ -1,5 +1,6 @@
 import smtplib
 import ssl
+import os
 from email.message import EmailMessage
 from flask import Flask, request, jsonify
 
