@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fornecedores - Sistema de Almoxarifado</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Estilos dos formulários e tabelas (copiados do seu dashboard) */
+        .main-content main { padding: 30px; }
+        .form-container { background-color: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); padding: 30px; margin-bottom: 30px; }
+        .form-container h2 { margin-top: 0; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        .btn-submit { background-color: #2ecc71; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; }
+        .btn-update { background-color: #3498db; }
+        .btn-cancel { background-color: #95a5a6; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; text-decoration: none; margin-left: 10px; }
+        
+        .table-container { background-color: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background-color: #f9f9f9; color: #333; }
+        .actions a, .actions button {
+            text-decoration: none; padding: 5px 10px; border-radius: 5px;
+            color: white; font-size: 0.9em; margin-right: 5px; border: none; cursor: pointer;
+        }
+        .btn-edit { background-color: #3498db; }
+        .btn-delete { background-color: #e74c3c; }
+
+        /* Estilos para as mensagens Flash */
+        .flash-messages { margin-bottom: 20px; }
+        .flash { padding: 15px; border-radius: 5px; margin-bottom: 10px; }
+        .flash.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .flash.info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .flash.danger { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="logo">
+            <h3>Almoxarifado</h3>
+        </div>
+        <nav>
+            <ul>
+                <!-- Atualiza os links e a classe 'active' -->
+                <li><a href="{{ url_for('dashboard') }}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="{{ url_for('dashboard') }}"><i class="fas fa-boxes"></i> Estoque</a></li>
+                <li><a href="#"><i class="fas fa-truck-loading"></i> Entradas/Recebimento</a></li>
+                <li><a href="#"><i class="fas fa-dolly"></i> Saídas/Requisição</a></li>
+                <li class="active"><a href="{{ url_for('fornecedores_crud') }}"><i class="fas fa-users"></i> Fornecedores</a></li>
+                <li><a href="#"><i class="fas fa-cogs"></i> Configurações</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <header class="header">
+            <h1>Gestão de Fornecedores</h1>
+            <!-- Adiciona o nome do usuário logado e link de Logout -->
+            <div class="user-info">Usuário: {{ current_user.nome }} | <a href="{{ url_for('logout') }}">Sair</a></div>
+        </header>
+
+        <main>
+            <!-- Mensagens Flash (feedback para o usuário) -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                <div class="flash-messages">
+                {% for category, message in messages %}
+                  <div class="flash {{ category }}">{{ message }}</div>
+                {% endfor %}
+                </div>
+              {% endif %}
+            {% endwith %}
+
+            <!-- SEÇÃO 1: FORMULÁRIOS DE CRUD DE FORNECEDORES -->
+            {% if fornecedor_para_editar %}
+            <!-- Formulário de EDIÇÃO -->
+            <div class="form-container">
+                <h2>Editando: {{ fornecedor_para_editar.nome }}</h2>
+                <form action="{{ url_for('editar_fornecedor', fornecedor_id=fornecedor_para_editar.id) }}" method="POST">
+                    <div class="form-group">
+                        <label for="nome">Nome do Fornecedor</label>
+                        <input type="text" id="nome" name="nome" value="{{ fornecedor_para_editar.nome }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="contato_nome">Nome do Contato</label>
+                        <input type="text" id="contato_nome" name="contato_nome" value="{{ fornecedor_para_editar.contato_nome }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="telefone">Telefone</label>
+                        <input type="text" id="telefone" name="telefone" value="{{ fornecedor_para_editar.telefone }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">E-mail</label>
+                        <input type="email" id="email" name="email" value="{{ fornecedor_para_editar.email }}">
+                    </div>
+                    <div>
+                        <button type="submit" class="btn-submit btn-update">Atualizar Fornecedor</button>
+                        <a href="{{ url_for('fornecedores_crud') }}" class="btn-cancel">Cancelar Edição</a>
+                    </div>
+                </form>
+            </div>
+            {% else %}
+            <!-- Formulário de ADIÇÃO -->
+            <div class="form-container">
+                <h2>Adicionar Novo Fornecedor</h2>
+                <form action="{{ url_for('adicionar_fornecedor') }}" method="POST">
+                    <div class="form-group">
+                        <label for="nome">Nome do Fornecedor</label>
+                        <input type="text" id="nome" name="nome" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="contato_nome">Nome do Contato</label>
+                        <input type="text" id="contato_nome" name="contato_nome">
+                    </div>
+                    <div class="form-group">
+                        <label for="telefone">Telefone</label>
+                        <input type="text" id="telefone" name="telefone">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">E-mail</label>
+                        <input type="email" id="email" name="email">
+                    </div>
+                    <div>
+                        <button type="submit" class="btn-submit">Salvar Novo Fornecedor</button>
+                    </div>
+                </form>
+            </div>
+            {% endif %}
+
+
+            <!-- SEÇÃO 2: LISTA DE FORNECEDORES -->
+            <div class="table-container">
+                <h2>Fornecedores Cadastrados</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Contato</th>
+                            <th>Telefone</th>
+                            <th>E-mail</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fornecedor in fornecedores %}
+                        <tr>
+                            <td>{{ fornecedor.id }}</td>
+                            <td>{{ fornecedor.nome }}</td>
+                            <td>{{ fornecedor.contato_nome }}</td>
+                            <td>{{ fornecedor.telefone }}</td>
+                            <td>{{ fornecedor.email }}</td>
+                            <td class="actions">
+                                <a href="{{ url_for('editar_fornecedor', fornecedor_id=fornecedor.id) }}" class="btn-edit">Editar</a>
+                                <form action="{{ url_for('remover_fornecedor', fornecedor_id=fornecedor.id) }}" method="POST" style="display:inline;">
+                                    <button type="submit" class="btn-delete">Remover</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </main>
+        
+        <footer class="footer">
+            <p>&copy; 2025 Sistema de Almoxarifado - Desenvolvido em Python</p>
+        </footer>
+    </div>
+
+</body>
+</html>
