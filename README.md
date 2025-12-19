@@ -31,14 +31,16 @@ Microserviço de Email → Alertas de estoque
 # Autenticação e Segurança - Usando o JWT
 
 As senhas são armazenadas usando hash seguro (werkzeug.security)
+
 O login gera um JWT armazenado em cookie HTTPOnly
+
 O token contém claims com:
 
-#-ID do usuário
+#ID do usuário
 
-#-Nome
+#Nome
 
-#-Cargo (admin / gestor / vendedor)
+#Cargo (admin / gestor / vendedor)
 
 
 #SEGURITY GROUP
@@ -62,6 +64,7 @@ O token contém claims com:
 #http://98.86.104.32:8000/login
 
 <img width="1121" height="208" alt="image" src="https://github.com/user-attachments/assets/99e6221e-d20d-4caf-9198-a38be707a765" />
+
 
 
 
