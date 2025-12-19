@@ -156,6 +156,21 @@ http://13.219.65.108:8000/login
 
 <img width="1121" height="208" alt="image" src="https://github.com/user-attachments/assets/99e6221e-d20d-4caf-9198-a38be707a765" />
 
+# Conclusão
+
+Então este projeto de almoxarifado, demonstra:
+
+Arquitetura segura
+
+Controle de acesso por cargo
+
+Boas práticas com Flask
+
+Uso real de JWT + Cookies
+
+Integração com microserviços
+
+
 
 
 
