@@ -74,6 +74,20 @@ app.config['MYSQL_USER'] = os.environ.get('MYSQL_USER', 'root')
 app.config['MYSQL_PASSWORD'] = os.environ.get('MYSQL_ROOT_PASSWORD', 'admin123')
 app.config['MYSQL_DATABASE'] = os.environ.get('MYSQL_DATABASE', 'almoxarifado_db')
 
+#### Isso permite rodar localmente ou em Docker/EC2 sem alterar o código
+
+# Construimos - Decoradores de Permissão
+
+### O decorador: 
+
+#### @role_required(['admin', 'gestor'])
+
+Faz o seguinte: 
+
+##### 1- Lê o cardo do JWT
+##### 2- Compara com os cargos permitios e por fim
+##### 3- Bloqueia acesso indevido (erro 403)
+
 # SEGURITY GROUP
 
 Criamos um Grupo Seguro para a instância do projeto, com as configurações:
@@ -97,6 +111,7 @@ Decidimos criar um IP Elástico, para sempre ser o mesmo IP, sem precisar que o 
 http://13.219.65.108:8000/login
 
 <img width="1121" height="208" alt="image" src="https://github.com/user-attachments/assets/99e6221e-d20d-4caf-9198-a38be707a765" />
+
 
 
 
