@@ -1,15 +1,22 @@
 CREATE DATABASE IF NOT EXISTS almoxarifado_db;
 USE almoxarifado_db;
 
+-- 1. Tabela de Locais (NOVA)
+CREATE TABLE IF NOT EXISTS locais (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL UNIQUE
+);
+
+-- 2. Tabela de Usuários
 CREATE TABLE IF NOT EXISTS usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
-    senha VARCHAR(255) NOT NULL, -- Agora suporta o Hash longo
-    cargo VARCHAR(50) DEFAULT 'vendedor' -- Novo campo de permissão
+    senha VARCHAR(255) NOT NULL,
+    cargo VARCHAR(50) DEFAULT 'vendedor'
 );
 
--- Tabela de Fornecedores
+-- 3. Tabela de Fornecedores
 CREATE TABLE IF NOT EXISTS fornecedores (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100),
@@ -18,18 +25,31 @@ CREATE TABLE IF NOT EXISTS fornecedores (
     email VARCHAR(100)
 );
 
--- Tabela de Produtos
+-- 4. Tabela de Produtos (ATUALIZADA: localizacao agora é local_id)
 CREATE TABLE IF NOT EXISTS produtos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100),
     quantidade INT DEFAULT 0,
-    localizacao VARCHAR(100),
+    local_id INT, -- Mudou de VARCHAR para INT
     estoque_min INT DEFAULT 0,
     fornecedor_id INT,
     gestor_id INT,
+    FOREIGN KEY (local_id) REFERENCES locais(id) ON DELETE SET NULL,
     FOREIGN KEY (fornecedor_id) REFERENCES fornecedores(id) ON DELETE SET NULL,
     FOREIGN KEY (gestor_id) REFERENCES usuarios(id) ON DELETE SET NULL
 );
+
+CREATE TABLE IF NOT EXISTS configuracoes (
+    chave VARCHAR(50) PRIMARY KEY,
+    valor VARCHAR(255) NOT NULL
+);
+
+-- Insere o e-mail padrão inicial (se não existir)
+INSERT IGNORE INTO configuracoes (chave, valor) VALUES ('email_alerta', 'audemarioestudante@gmail.com');
+
+-- (O resto dos INSERTs de usuários e locais continua igual...)
+-- Inserir alguns locais padrão para não começar vazio
+INSERT INTO locais (nome) VALUES ('Extradição'), ('generico carga/descarga'), ('generico descarga'), ('generico terminal carga');
 
 
 -- Inserir um usuário administrador com senha HASH (senha: admin)

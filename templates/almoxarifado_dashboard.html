@@ -4,140 +4,77 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Almoxarifado</title>
-   
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-   
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background-color: #f4f7f6; }
-
-        /* --- SIDEBAR & LAYOUT --- */
-        .sidebar { width: 250px; background-color: #2c3e50; color: white; position: fixed; height: 100%; overflow-y: auto; }
-        .sidebar .logo { padding: 30px; text-align: center; }
-        .sidebar nav ul { list-style: none; padding: 0; margin: 0; }
-        .sidebar nav li a { display: block; padding: 15px 30px; text-decoration: none; color: #ecf0f1; transition: background-color 0.3s; }
-        .sidebar nav li a:hover, .sidebar nav li.active a { background-color: #34495e; color: white; }
-        .sidebar nav li a i { margin-right: 10px; }
-
-        .main-content { margin-left: 250px; }
-        .header { background-color: white; padding: 20px 30px; border-bottom: 1px solid #eee; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
-        .header h1 { margin: 0; color: #2c3e50; }
-        .footer { text-align: center; padding: 20px; color: #777; background-color: #f9f9f9; border-top: 1px solid #eee; margin-top: 30px; }
-
-        /* --- DASHBOARD ADMIN --- */
-        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; }
-        .card { background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .card h2 { margin-top: 0; color: #34495e; }
-        .card .big-number { font-size: 2.5em; font-weight: bold; margin: 10px 0; }
-        .card.item-count .big-number { color: #3498db; }
-        .card.low-stock .big-number { color: #e74c3c; }
-
-        .main-content main { padding: 30px; }
-        .form-container { background-color: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); padding: 30px; margin-bottom: 30px; }
-        .form-container h2 { margin-top: 0; }
-        
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        
-        .btn-submit { background-color: #2ecc71; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; }
-        .btn-update { background-color: #3498db; }
-        .btn-cancel { background-color: #95a5a6; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; text-decoration: none; margin-left: 10px; }
-        
-        .table-container { background-color: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
-        th { background-color: #f9f9f9; color: #333; }
-        .actions a, .actions button { text-decoration: none; padding: 5px 10px; border-radius: 5px; color: white; font-size: 0.9em; margin-right: 5px; border: none; cursor: pointer; }
-        .btn-edit { background-color: #3498db; }
-        .btn-delete { background-color: #e74c3c; }
-
-        .app-tab-controls { display: flex; background-color: #f9f9f9; border-bottom: 1px solid #eee; padding: 0 30px; }
-        .app-tab-controls .tab-link { padding: 15px 20px; text-decoration: none; color: #555; font-weight: bold; border-bottom: 3px solid transparent; margin-bottom: -1px; }
-        .app-tab-controls .tab-link.active { color: #3498db; border-bottom-color: #3498db; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
-        /* --- NOVO: ESTILO DO VENDEDOR (CARDS) --- */
-        .vendedor-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 25px;
-        }
-
-        .product-card {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            transition: transform 0.2s;
-            border-left: 5px solid #3498db;
-        }
-        
-        .product-card:hover { transform: translateY(-5px); }
-        .product-card h3 { margin: 0 0 10px 0; color: #2c3e50; font-size: 1.2em; }
-        .product-card .location { color: #7f8c8d; font-size: 0.9em; margin-bottom: 15px; }
-        .product-card .location i { margin-right: 5px; }
-        
-        .stock-display {
-            text-align: center;
-            background-color: #f0f8ff;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-        .stock-display .label { font-size: 0.8em; text-transform: uppercase; color: #7f8c8d; }
-        .stock-display .value { font-size: 2.2em; font-weight: bold; color: #2c3e50; }
-        
-        .stock-action {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            border-top: 1px solid #eee;
-            padding-top: 15px;
-        }
-        .stock-action input { 
-            width: 70px; padding: 8px; text-align: center; border: 1px solid #ccc; border-radius: 4px; 
-        }
-        .stock-action button {
-            flex: 1;
-            background-color: #e67e22; /* Laranja para saída */
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background 0.3s;
-        }
-        .stock-action button:hover { background-color: #d35400; }
-        .low-stock-alert { color: #e74c3c; font-weight: bold; margin-bottom: 10px; font-size: 0.9em; display: block; }
-
+        :root { --bg-body:#f4f7f6; --bg-sidebar:#2c3e50; --text-sidebar:#ecf0f1; --bg-header:#ffffff; --text-primary:#333333; --text-secondary:#777777; --card-bg:#ffffff; --border-color:#eeeeee; --input-bg:#ffffff; --input-border:#cccccc; --accent-color:#3498db; --success-color:#2ecc71; --danger-color:#e74c3c; --hover-sidebar:#34495e; --shadow:rgba(0,0,0,0.05); }
+        body.dark-mode { --bg-body:#1a1c1e; --bg-sidebar:#111315; --text-sidebar:#b0b3b8; --bg-header:#242526; --text-primary:#e4e6eb; --text-secondary:#b0b3b8; --card-bg:#242526; --border-color:#3e4042; --input-bg:#3a3b3c; --input-border:#3e4042; --shadow:rgba(0,0,0,0.3); }
+        body { font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin:0; background-color:var(--bg-body); color:var(--text-primary); transition:0.3s; }
+        .sidebar { width:250px; background-color:var(--bg-sidebar); color:var(--text-sidebar); position:fixed; height:100%; overflow-y:auto; }
+        .sidebar .logo { padding:30px; text-align:center; border-bottom:1px solid rgba(255,255,255,0.1); }
+        .sidebar nav ul { list-style:none; padding:0; margin:0; }
+        .sidebar nav li a { display:block; padding:15px 30px; text-decoration:none; color:var(--text-sidebar); transition:0.3s; }
+        .sidebar nav li a:hover, .sidebar nav li.active a { background-color:var(--hover-sidebar); color:white; }
+        .sidebar nav li a i { margin-right:10px; }
+        .main-content { margin-left:250px; }
+        .header { background-color:var(--bg-header); padding:15px 30px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:100; }
+        .header h1 { margin:0; font-size:1.5rem; }
+        .hamburger-btn { background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-primary); padding:10px; }
+        .dropdown-menu { display:none; position:absolute; right:0; top:50px; background-color:var(--card-bg); border:1px solid var(--border-color); border-radius:8px; width:200px; z-index:1000; box-shadow:0 4px 12px var(--shadow); }
+        .dropdown-menu.show { display:block; }
+        .dropdown-menu a, .dropdown-menu button { display:block; width:100%; padding:12px 20px; text-align:left; background:none; border:none; color:var(--text-primary); text-decoration:none; cursor:pointer; border-bottom:1px solid var(--border-color); }
+        .dropdown-menu a:hover, .dropdown-menu button:hover { background-color:var(--bg-body); }
+        .dashboard-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:30px; }
+        .card { background-color:var(--card-bg); padding:30px; border-radius:8px; border:1px solid var(--border-color); box-shadow:0 4px 6px var(--shadow); }
+        .card .big-number { font-size:2.5em; font-weight:bold; margin:10px 0; }
+        .card.item-count .big-number { color:var(--accent-color); }
+        .card.low-stock .big-number { color:var(--danger-color); }
+        .main-content main { padding:30px; }
+        .form-container { background-color:var(--card-bg); border-radius:8px; padding:30px; margin-bottom:30px; border:1px solid var(--border-color); }
+        .form-group { margin-bottom:15px; }
+        .form-group label { display:block; margin-bottom:5px; font-weight:bold; }
+        .form-group input, .form-group select { width:100%; padding:10px; border:1px solid var(--input-border); background-color:var(--input-bg); color:var(--text-primary); border-radius:5px; box-sizing:border-box; }
+        .btn-submit { background-color:var(--success-color); color:white; padding:12px 20px; border:none; border-radius:5px; cursor:pointer; }
+        .btn-update { background-color:var(--accent-color); }
+        .btn-cancel { background-color:#95a5a6; color:white; padding:12px 20px; border-radius:5px; text-decoration:none; margin-left:10px; }
+        .table-container { background-color:var(--card-bg); border-radius:8px; overflow-x:auto; border:1px solid var(--border-color); }
+        table { width:100%; border-collapse:collapse; }
+        th, td { padding:15px; text-align:left; border-bottom:1px solid var(--border-color); color:var(--text-primary); }
+        th { background-color:var(--bg-body); font-weight:bold; }
+        .btn-edit { background-color:var(--accent-color); color:white; padding:5px 10px; border-radius:5px; text-decoration:none; margin-right:5px; }
+        .btn-delete { background-color:var(--danger-color); color:white; padding:5px 10px; border-radius:5px; border:none; cursor:pointer; }
+        .app-tab-controls { display:flex; background-color:var(--bg-header); border-bottom:1px solid var(--border-color); padding:0 30px; }
+        .app-tab-controls .tab-link { padding:15px 20px; text-decoration:none; color:var(--text-secondary); font-weight:bold; border-bottom:3px solid transparent; margin-bottom:-1px; }
+        .app-tab-controls .tab-link.active { color:var(--accent-color); border-bottom-color:var(--accent-color); }
+        .tab-content { display:none; }
+        .tab-content.active { display:block; }
+        .vendedor-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:25px; }
+        .product-card { background:var(--card-bg); border-radius:10px; padding:20px; border:1px solid var(--border-color); border-left:5px solid var(--accent-color); display:flex; flex-direction:column; justify-content:space-between; }
+        .product-card:hover { transform:translateY(-5px); }
+        .stock-display { text-align:center; background-color:var(--bg-body); padding:10px; border-radius:5px; margin-bottom:20px; }
+        .stock-display .value { font-size:2.2em; font-weight:bold; }
+        .stock-action { display:flex; gap:10px; padding-top:15px; border-top:1px solid var(--border-color); }
+        .stock-action input { width:70px; text-align:center; }
+        .stock-action button { flex:1; background-color:#e67e22; color:white; border:none; padding:10px; border-radius:4px; cursor:pointer; font-weight:bold; }
+        .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; justify-content:center; align-items:center; }
+        .modal-content { background-color:var(--card-bg); padding:30px; border-radius:8px; width:100%; max-width:400px; position:relative; }
+        .modal-close { position:absolute; top:15px; right:20px; cursor:pointer; font-size:1.5rem; color:var(--text-secondary); }
+        .footer { text-align:center; padding:20px; margin-top:30px; color:var(--text-secondary); border-top:1px solid var(--border-color); background-color:var(--bg-header); }
     </style>
 </head>
 <body>
     <div id="app-view">
-       
         <div class="sidebar">
             <div class="logo">
-                <h3> Almoxarifado</h3>
-                <p style="font-size: 0.8em; color: #bdc3c7;">Perfil: {{ current_user_role|upper }}</p>
+                <h3><i class="fas fa-boxes"></i> Almoxarifado</h3>
+                <p style="font-size:0.8em; color:#bdc3c7;">Perfil: {{ current_user_role|upper }}</p>
             </div>
             <nav>
                 <ul>
-                    <li class="{% if active_tab == 'dashboard' %}active{% endif %}">
-                        <a href="{{ url_for('index') }}"><i class="fas fa-box-open"></i> Produtos</a>
-                    </li>
-                    
+                    <li class="{% if active_tab == 'dashboard' %}active{% endif %}"><a href="{{ url_for('index') }}"><i class="fas fa-box-open"></i> Produtos</a></li>
                     {% if current_user_role != 'vendedor' %}
-                    <li class="{% if active_tab == 'fornecedores' %}active{% endif %}">
-                        <a href="{{ url_for('index', tab='fornecedores') }}"><i class="fas fa-truck"></i> Fornecedores</a>
-                    </li>
-                    <li class="{% if active_tab == 'usuarios' %}active{% endif %}">
-                        <a href="{{ url_for('index', tab='usuarios') }}"><i class="fas fa-users-cog"></i> Usuários</a>
-                    </li>
+                    <li class="{% if active_tab == 'locais' %}active{% endif %}"><a href="{{ url_for('index', tab='locais') }}"><i class="fas fa-warehouse"></i> Locais</a></li>
+                    <li class="{% if active_tab == 'fornecedores' %}active{% endif %}"><a href="{{ url_for('index', tab='fornecedores') }}"><i class="fas fa-truck"></i> Fornecedores</a></li>
+                    <li class="{% if active_tab == 'usuarios' %}active{% endif %}"><a href="{{ url_for('index', tab='usuarios') }}"><i class="fas fa-users-cog"></i> Usuários</a></li>
                     {% endif %}
                 </ul>
             </nav>
@@ -145,34 +82,24 @@
 
         <div class="main-content">
             <header class="header">
-                <h1>
-                    {% if current_user_role == 'vendedor' %}
-                        Painel de Saída de Estoque
-                    {% else %}
-                        {% if active_tab == 'dashboard' %} Dashboard e Estoque
-                        {% elif active_tab == 'fornecedores' %} Gestão de Fornecedores
-                        {% elif active_tab == 'usuarios' %} Gestão de Usuários
-                        {% endif %}
-                    {% endif %}
-                </h1>
-                
-                <a href="{{ url_for('logout') }}" style="color: #e74c3c; text-decoration: none; font-weight: bold;">
-                    <i class="fas fa-sign-out-alt"></i> Sair
-                </a>
+                <h1>Painel {{ current_user_role|capitalize }}</h1>
+                <div class="user-menu">
+                    <button class="hamburger-btn" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
+                    <div id="dropdownMenu" class="dropdown-menu">
+                        <button onclick="toggleTheme()"><span id="theme-icon">🌙</span> <span id="theme-text">Modo Escuro</span></button>
+                        <button onclick="openModal()"><i class="fas fa-user-edit"></i> Minha Conta</button>
+                        <a href="{{ url_for('logout') }}" style="color:var(--danger-color);"><i class="fas fa-sign-out-alt"></i> Sair</a>
+                    </div>
+                </div>
             </header>
 
             {% if current_user_role != 'vendedor' %}
             <nav class="app-tab-controls">
-                <a href="{{ url_for('index') }}" class="tab-link {% if active_tab == 'dashboard' %}active{% endif %}">
-                   <i class="fas fa-tachometer-alt"></i> Dashboard & Estoque
-                </a>
-                <a href="{{ url_for('index', tab='fornecedores') }}" class="tab-link {% if active_tab == 'fornecedores' %}active{% endif %}">
-                   <i class="fas fa-truck"></i> Fornecedores
-                </a>
+                <a href="{{ url_for('index') }}" class="tab-link {% if active_tab == 'dashboard' %}active{% endif %}"><i class="fas fa-tachometer-alt"></i> Geral</a>
+                <a href="{{ url_for('index', tab='locais') }}" class="tab-link {% if active_tab == 'locais' %}active{% endif %}"><i class="fas fa-warehouse"></i> Locais</a>
+                <a href="{{ url_for('index', tab='fornecedores') }}" class="tab-link {% if active_tab == 'fornecedores' %}active{% endif %}"><i class="fas fa-truck"></i> Fornecedores</a>
                 {% if current_user_role == 'admin' %}
-                <a href="{{ url_for('index', tab='usuarios') }}" class="tab-link {% if active_tab == 'usuarios' %}active{% endif %}">
-                   <i class="fas fa-users-cog"></i> Usuários
-                </a>
+                <a href="{{ url_for('index', tab='usuarios') }}" class="tab-link {% if active_tab == 'usuarios' %}active{% endif %}"><i class="fas fa-users-cog"></i> Usuários</a>
                 {% endif %}
             </nav>
             {% endif %}
@@ -184,139 +111,103 @@
                     <div class="product-card">
                         <div>
                             <h3>{{ produto.nome }}</h3>
-                            <div class="location">
-                                <i class="fas fa-map-marker-alt"></i> {{ produto.localizacao or 'Sem local' }}
-                            </div>
-                            
-                            {% if produto.quantidade < produto.estoque_min %}
-                            <span class="low-stock-alert"><i class="fas fa-exclamation-circle"></i> Estoque Baixo!</span>
-                            {% endif %}
+                            <div class="location"><i class="fas fa-map-marker-alt"></i> {{ produto.local_nome or 'N/A' }}</div>
+                            {% if produto.quantidade < produto.estoque_min %}<span style="color:var(--danger-color); font-weight:bold;">Estoque Baixo!</span>{% endif %}
                         </div>
-
                         <div>
-                            <div class="stock-display">
-                                <div class="label">Em Estoque</div>
-                                <div class="value">{{ produto.quantidade }}</div>
-                            </div>
-
+                            <div class="stock-display"><div class="label">Estoque</div><div class="value">{{ produto.quantidade }}</div></div>
                             <form action="{{ url_for('realizar_saida', produto_id=produto.id) }}" method="POST" class="stock-action">
-                                <input type="number" name="quantidade_saida" min="1" max="{{ produto.quantidade }}" placeholder="Qtd" required>
-                                <button type="submit">
-                                    <i class="fas fa-minus-circle"></i> Dar Baixa
-                                </button>
+                                <input type="number" name="quantidade_saida" min="1" max="{{ produto.quantidade }}" required>
+                                <button type="submit">Baixar</button>
                             </form>
                         </div>
                     </div>
                     {% endfor %}
                 </div>
             </main>
-
             {% else %}
             
             <div id="dashboard-content" class="tab-content {% if active_tab == 'dashboard' %}active{% endif %}">
                 <main>
-                    <div class="dashboard-grid" style="margin-bottom: 30px;">
-                        <div class="card item-count">
-                            <h2><i class="fas fa-cubes"></i> Total de Itens</h2>
-                            <p class="big-number">{{ total_itens }}</p>
-                        </div>
-                        <div class="card low-stock">
-                            <h2><i class="fas fa-exclamation-triangle"></i> Estoque Baixo</h2>
-                            <p class="big-number">{{ estoque_baixo_count }}</p>
-                        </div>
+                    <div class="dashboard-grid" style="margin-bottom:30px;">
+                        <div class="card item-count"><h2>Total</h2><p class="big-number">{{ total_itens }}</p></div>
+                        <div class="card low-stock"><h2>Alerta</h2><p class="big-number">{{ estoque_baixo_count }}</p></div>
                     </div>
 
-                    {% if produto_para_editar %}
                     <div class="form-container">
-                        <h2>Editando: {{ produto_para_editar.nome }}</h2>
-                        <form action="{{ url_for('editar_produto', produto_id=produto_para_editar.id) }}" method="POST">
-                            <div class="form-group"><label for="nome">Nome</label><input type="text" id="nome" name="nome" value="{{ produto_para_editar.nome }}" required></div>
-                            <div class="form-group"><label for="quantidade">Qtd</label><input type="number" id="quantidade" name="quantidade" value="{{ produto_para_editar.quantidade }}" required></div>
-                            <div class="form-group"><label for="localizacao">Local</label><input type="text" id="localizacao" name="localizacao" value="{{ produto_para_editar.localizacao }}"></div>
-                            <div class="form-group"><label for="estoque_min">Mín.</label><input type="number" id="estoque_min" name="estoque_min" value="{{ produto_para_editar.estoque_min }}" required></div>
+                        <h2>{{ 'Editando Produto' if produto_para_editar else 'Novo Produto' }}</h2>
+                        <form action="{{ url_for('editar_produto', produto_id=produto_para_editar.id) if produto_para_editar else url_for('adicionar_produto') }}" method="POST">
+                            <div class="form-group"><label>Nome</label><input type="text" name="nome" value="{{ produto_para_editar.nome if produto_para_editar else '' }}" required></div>
+                            <div class="form-group"><label>Qtd</label><input type="number" name="quantidade" value="{{ produto_para_editar.quantidade if produto_para_editar else '' }}" required></div>
+                            
                             <div class="form-group">
-                                <label for="fornecedor_id">Fornecedor</label>
-                                <select id="fornecedor_id" name="fornecedor_id">
-                                    <option value="0">Nenhum</option>
-                                    {% for f in fornecedores %}
-                                    <option value="{{ f.id }}" {% if produto_para_editar.fornecedor_id == f.id %}selected{% endif %}>{{ f.nome }}</option>
+                                <label>Local de Armazenamento</label>
+                                <select name="local_id">
+                                    <option value="0">Sem local definido</option>
+                                    {% for l in locais %}
+                                    <option value="{{ l.id }}" {% if produto_para_editar and produto_para_editar.local_id == l.id %}selected{% endif %}>{{ l.nome }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
-                            <div class="form-group">
-                                <label for="gestor_id">Gestor Responsável</label>
-                                <select id="gestor_id" name="gestor_id">
-                                    <option value="0">Nenhum</option>
-                                    {% for u in usuarios %}
-                                    <option value="{{ u.id }}" {% if produto_para_editar.gestor_id == u.id %}selected{% endif %}>{{ u.nome }} ({{ u.email }})</option>
-                                    {% endfor %}
-                                </select>
+                            
+                            <div class="form-group"><label>Mínimo</label><input type="number" name="estoque_min" value="{{ produto_para_editar.estoque_min if produto_para_editar else '10' }}" required></div>
+                            <div class="form-group"><label>Fornecedor</label>
+                                <select name="fornecedor_id"><option value="0">Nenhum</option>{% for f in fornecedores %}<option value="{{ f.id }}" {% if produto_para_editar and produto_para_editar.fornecedor_id == f.id %}selected{% endif %}>{{ f.nome }}</option>{% endfor %}</select>
                             </div>
-                            <div>
-                                <button type="submit" class="btn-submit btn-update">Atualizar Produto</button>
-                                <a href="{{ url_for('index') }}" class="btn-cancel">Cancelar Edição</a>
+                            <div class="form-group"><label>Gestor</label>
+                                <select name="gestor_id"><option value="0">Nenhum</option>{% for u in usuarios %}<option value="{{ u.id }}" {% if produto_para_editar and produto_para_editar.gestor_id == u.id %}selected{% endif %}>{{ u.nome }}</option>{% endfor %}</select>
                             </div>
+                            <button type="submit" class="btn-submit">Salvar</button>
+                            {% if produto_para_editar %}<a href="{{ url_for('index') }}" class="btn-cancel">Cancelar</a>{% endif %}
                         </form>
                     </div>
-                    {% else %}
-                    <div class="form-container">
-                        <h2>Adicionar Novo Produto</h2>
-                        <form action="{{ url_for('adicionar_produto') }}" method="POST">
-                            <div class="form-group"><label for="nome">Nome</label><input type="text" id="nome" name="nome" required></div>
-                            <div class="form-group"><label for="quantidade">Qtd</label><input type="number" id="quantidade" name="quantidade" required></div>
-                            <div class="form-group"><label for="localizacao">Local</label><input type="text" id="localizacao" name="localizacao"></div>
-                            <div class="form-group"><label for="estoque_min">Mín.</label><input type="number" id="estoque_min" name="estoque_min" value="10" required></div>
-                            <div class="form-group">
-                                <label for="fornecedor_id">Fornecedor</label>
-                                <select id="fornecedor_id" name="fornecedor_id">
-                                    <option value="0">Nenhum</option>
-                                    {% for f in fornecedores %}
-                                    <option value="{{ f.id }}">{{ f.nome }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="gestor_id">Gestor Responsável</label>
-                                <select id="gestor_id" name="gestor_id">
-                                    <option value="0">Nenhum</option>
-                                    {% for u in usuarios %}
-                                    <option value="{{ u.id }}">{{ u.nome }} ({{ u.email }})</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div><button type="submit" class="btn-submit">Salvar Novo Produto</button></div>
-                        </form>
-                    </div>
-                    {% endif %}
 
                     <div class="table-container">
-                        <h2>Estoque Atual</h2>
                         <table>
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Nome</th>
-                                    <th>Fornecedor</th>
-                                    <th>Gestor</th> <th>Qtd</th>
-                                    <th>Local</th>
-                                    <th>Mín.</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
+                            <thead><tr><th>ID</th><th>Nome</th><th>Local</th><th>Qtd</th><th>Ações</th></tr></thead>
                             <tbody>
-                                {% for produto in produtos %}
+                                {% for p in produtos %}
                                 <tr>
-                                    <td>{{ produto.id }}</td>
-                                    <td>{{ produto.nome }}</td>
-                                    <td>{{ produto.fornecedor_nome or 'N/A' }}</td>
-                                    <td>{{ produto.gestor_nome or 'N/A' }}</td> <td>{{ produto.quantidade }}</td>
-                                    <td>{{ produto.localizacao }}</td>
-                                    <td>{{ produto.estoque_min }}</td>
+                                    <td>{{ p.id }}</td>
+                                    <td>{{ p.nome }}</td>
+                                    <td>
+                                        {% if p.local_nome %}<span style="background:rgba(52,152,219,0.1); color:var(--accent-color); padding:2px 8px; border-radius:10px; font-size:0.9em;">{{ p.local_nome }}</span>
+                                        {% else %}-{% endif %}
+                                    </td>
+                                    <td>{{ p.quantidade }}</td>
                                     <td class="actions">
-                                        <a href="{{ url_for('index', edit_produto=produto.id) }}" class="btn-edit">Editar</a>
-                                        <form action="{{ url_for('remover_produto', produto_id=produto.id) }}" method="POST" style="display:inline;">
-                                            <button type="submit" class="btn-delete">Remover</button>
-                                        </form>
+                                        <a href="{{ url_for('index', edit_produto=p.id) }}" class="btn-edit"><i class="fas fa-edit"></i></a>
+                                        <form action="{{ url_for('remover_produto', produto_id=p.id) }}" method="POST" style="display:inline;"><button type="submit" class="btn-delete"><i class="fas fa-trash"></i></button></form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </main>
+            </div>
+
+            <div id="locais-content" class="tab-content {% if active_tab == 'locais' %}active{% endif %}">
+                <main>
+                    <div class="form-container">
+                        <h2>{{ 'Editando Local' if local_para_editar else 'Novo Local' }}</h2>
+                        <form action="{{ url_for('editar_local', local_id=local_para_editar.id) if local_para_editar else url_for('adicionar_local') }}" method="POST">
+                            <div class="form-group"><label>Nome do Local (ex: Prateleira A1, Depósito)</label><input type="text" name="nome" value="{{ local_para_editar.nome if local_para_editar else '' }}" required></div>
+                            <button type="submit" class="btn-submit">Salvar</button>
+                            {% if local_para_editar %}<a href="{{ url_for('index', tab='locais') }}" class="btn-cancel">Cancelar</a>{% endif %}
+                        </form>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead><tr><th>ID</th><th>Nome</th><th>Ações</th></tr></thead>
+                            <tbody>
+                                {% for l in locais %}
+                                <tr>
+                                    <td>{{ l.id }}</td>
+                                    <td><i class="fas fa-map-marker-alt" style="color:var(--danger-color); margin-right:5px;"></i> {{ l.nome }}</td>
+                                    <td class="actions">
+                                        <a href="{{ url_for('index', tab='locais', edit_local=l.id) }}" class="btn-edit"><i class="fas fa-edit"></i></a>
+                                        <form action="{{ url_for('remover_local', local_id=l.id) }}" method="POST" style="display:inline;"><button type="submit" class="btn-delete"><i class="fas fa-trash"></i></button></form>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -329,47 +220,26 @@
             <div id="fornecedores-content" class="tab-content {% if active_tab == 'fornecedores' %}active{% endif %}">
                 <main>
                     <div class="form-container">
-                        {% if fornecedor_para_editar %}
-                        <h2>Editando: {{ fornecedor_para_editar.nome }}</h2>
-                        <form action="{{ url_for('editar_fornecedor', fornecedor_id=fornecedor_para_editar.id) }}" method="POST">
-                        {% else %}
-                        <h2>Adicionar Novo Fornecedor</h2>
-                        <form action="{{ url_for('adicionar_fornecedor') }}" method="POST">
-                        {% endif %}
-                            <div class="form-group"><label for="nome">Nome</label><input type="text" id="nome" name="nome" value="{{ fornecedor_para_editar.nome if fornecedor_para_editar else '' }}" required></div>
-                            <div class="form-group"><label for="contato_nome">Contato</label><input type="text" id="contato_nome" name="contato_nome" value="{{ fornecedor_para_editar.contato_nome if fornecedor_para_editar else '' }}"></div>
-                            <div class="form-group"><label for="telefone">Telefone</label><input type="text" id="telefone" name="telefone" value="{{ fornecedor_para_editar.telefone if fornecedor_para_editar else '' }}"></div>
-                            <div class="form-group"><label for="email">E-mail</label><input type="email" id="email" name="email" value="{{ fornecedor_para_editar.email if fornecedor_para_editar else '' }}"></div>
-                            <div>
-                                {% if fornecedor_para_editar %}
-                                <button type="submit" class="btn-submit btn-update">Atualizar Fornecedor</button>
-                                <a href="{{ url_for('index', tab='fornecedores') }}" class="btn-cancel">Cancelar Edição</a>
-                                {% else %}
-                                <button type="submit" class="btn-submit">Salvar Novo Fornecedor</button>
-                                {% endif %}
-                            </div>
+                        <h2>{{ 'Editando Fornecedor' if fornecedor_para_editar else 'Novo Fornecedor' }}</h2>
+                        <form action="{{ url_for('editar_fornecedor', fornecedor_id=fornecedor_para_editar.id) if fornecedor_para_editar else url_for('adicionar_fornecedor') }}" method="POST">
+                            <div class="form-group"><label>Nome</label><input type="text" name="nome" value="{{ fornecedor_para_editar.nome if fornecedor_para_editar else '' }}" required></div>
+                            <div class="form-group"><label>Contato</label><input type="text" name="contato_nome" value="{{ fornecedor_para_editar.contato_nome if fornecedor_para_editar else '' }}"></div>
+                            <div class="form-group"><label>Telefone</label><input type="text" name="telefone" value="{{ fornecedor_para_editar.telefone if fornecedor_para_editar else '' }}"></div>
+                            <div class="form-group"><label>Email</label><input type="email" name="email" value="{{ fornecedor_para_editar.email if fornecedor_para_editar else '' }}"></div>
+                            <button type="submit" class="btn-submit">Salvar</button>
+                            {% if fornecedor_para_editar %}<a href="{{ url_for('index', tab='fornecedores') }}" class="btn-cancel">Cancelar</a>{% endif %}
                         </form>
                     </div>
-
                     <div class="table-container">
-                        <h2>Fornecedores Cadastrados</h2>
                         <table>
-                            <thead>
-                                <tr><th>ID</th><th>Nome</th><th>Contato</th><th>Telefone</th><th>E-mail</th><th>Ações</th></tr>
-                            </thead>
+                            <thead><tr><th>Nome</th><th>Contato</th><th>Ações</th></tr></thead>
                             <tbody>
                                 {% for f in fornecedores %}
                                 <tr>
-                                    <td>{{ f.id }}</td>
-                                    <td>{{ f.nome }}</td>
-                                    <td>{{ f.contato_nome or 'N/A' }}</td>
-                                    <td>{{ f.telefone or 'N/A' }}</td>
-                                    <td>{{ f.email or 'N/A' }}</td>
+                                    <td>{{ f.nome }}</td><td>{{ f.contato_nome }}</td>
                                     <td class="actions">
-                                        <a href="{{ url_for('index', tab='fornecedores', edit_fornecedor=f.id) }}" class="btn-edit">Editar</a>
-                                        <form action="{{ url_for('remover_fornecedor', fornecedor_id=f.id) }}" method="POST" style="display:inline;">
-                                            <button type="submit" class="btn-delete">Remover</button>
-                                        </form>
+                                        <a href="{{ url_for('index', tab='fornecedores', edit_fornecedor=f.id) }}" class="btn-edit"><i class="fas fa-edit"></i></a>
+                                        <form action="{{ url_for('remover_fornecedor', fornecedor_id=f.id) }}" method="POST" style="display:inline;"><button type="submit" class="btn-delete"><i class="fas fa-trash"></i></button></form>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -378,83 +248,36 @@
                     </div>
                 </main>
             </div>
-           
+
             <div id="usuarios-content" class="tab-content {% if active_tab == 'usuarios' %}active{% endif %}">
                 <main>
-                   <div class="form-container">
-                        {% if usuario_para_editar %}
-                        <h2>Editando Usuário: {{ usuario_para_editar.nome }}</h2>
-                        <form action="{{ url_for('editar_usuario', usuario_id=usuario_para_editar.id) }}" method="POST">
-                        {% else %}
-                        <h2>Adicionar Novo Usuário</h2>
-                        <form action="{{ url_for('adicionar_usuario') }}" method="POST">
-                        {% endif %}
-                            
-                            <div class="form-group">
-                                <label for="nome">Nome do Usuário</label>
-                                <input type="text" id="nome" name="nome" value="{{ usuario_para_editar.nome if usuario_para_editar else '' }}" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="email">E-mail (Login)</label>
-                                <input type="email" id="email" name="email" value="{{ usuario_para_editar.email if usuario_para_editar else '' }}" required>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="senha">
-                                    {% if usuario_para_editar %}Nova Senha (deixe em branco para manter a atual){% else %}Senha{% endif %}
-                                </label>
-                                <input type="password" id="senha" name="senha" {% if not usuario_para_editar %}required{% endif %}>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="cargo">Função no Sistema</label>
-                                <select name="cargo" id="cargo">
-                                    <option value="vendedor" {% if usuario_para_editar and usuario_para_editar.cargo == 'vendedor' %}selected{% endif %}>
-                                        Vendedor (Apenas visualiza e dá baixa)
-                                    </option>
-                                    <option value="gestor" {% if usuario_para_editar and usuario_para_editar.cargo == 'gestor' %}selected{% endif %}>
-                                        Gestor (Edita produtos e fornecedores)
-                                    </option>
-                                    <option value="admin" {% if usuario_para_editar and usuario_para_editar.cargo == 'admin' %}selected{% endif %}>
-                                        Admin (Acesso total + Gestão de Usuários)
-                                    </option>
+                    <div class="form-container">
+                        <h2>Gerenciar Usuários</h2>
+                        <form action="{{ url_for('editar_usuario', usuario_id=usuario_para_editar.id) if usuario_para_editar else url_for('adicionar_usuario') }}" method="POST">
+                            <div class="form-group"><label>Nome</label><input type="text" name="nome" value="{{ usuario_para_editar.nome if usuario_para_editar else '' }}" required></div>
+                            <div class="form-group"><label>Email</label><input type="email" name="email" value="{{ usuario_para_editar.email if usuario_para_editar else '' }}" required></div>
+                            <div class="form-group"><label>Senha</label><input type="password" name="senha"></div>
+                            <div class="form-group"><label>Cargo</label>
+                                <select name="cargo">
+                                    <option value="vendedor" {% if usuario_para_editar and usuario_para_editar.cargo == 'vendedor' %}selected{% endif %}>Vendedor</option>
+                                    <option value="gestor" {% if usuario_para_editar and usuario_para_editar.cargo == 'gestor' %}selected{% endif %}>Gestor</option>
+                                    <option value="admin" {% if usuario_para_editar and usuario_para_editar.cargo == 'admin' %}selected{% endif %}>Admin</option>
                                 </select>
                             </div>
-
-                            <div style="margin-top: 20px;">
-                                {% if usuario_para_editar %}
-                                <button type="submit" class="btn-submit btn-update">Atualizar Usuário</button>
-                                <a href="{{ url_for('index', tab='usuarios') }}" class="btn-cancel">Cancelar</a>
-                                {% else %}
-                                <button type="submit" class="btn-submit">Criar Usuário</button>
-                                {% endif %}
-                            </div>
+                            <button type="submit" class="btn-submit">Salvar</button>
+                            {% if usuario_para_editar %}<a href="{{ url_for('index', tab='usuarios') }}" class="btn-cancel">Cancelar</a>{% endif %}
                         </form>
                     </div>
-
                     <div class="table-container">
-                        <h2>Usuários Cadastrados</h2>
                         <table>
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Nome</th>
-                                    <th>E-mail</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
+                            <thead><tr><th>Nome</th><th>Email</th><th>Ações</th></tr></thead>
                             <tbody>
                                 {% for u in usuarios %}
                                 <tr>
-                                    <td>{{ u.id }}</td>
-                                    <td>{{ u.nome }}</td>
-                                    <td>{{ u.email or 'N/A' }}</td>
+                                    <td>{{ u.nome }}</td><td>{{ u.email }}</td>
                                     <td class="actions">
-                                        <a href="{{ url_for('index', tab='usuarios', edit_usuario=u.id) }}" class="btn-edit">Editar</a>
-                                        <form action="{{ url_for('remover_usuario', usuario_id=u.id) }}" method="POST" style="display:inline;">
-                                            <button type="submit" class="btn-delete">Remover</button>
-                                        </form>
+                                        <a href="{{ url_for('index', tab='usuarios', edit_usuario=u.id) }}" class="btn-edit"><i class="fas fa-edit"></i></a>
+                                        <form action="{{ url_for('remover_usuario', usuario_id=u.id) }}" method="POST" style="display:inline;"><button type="submit" class="btn-delete"><i class="fas fa-trash"></i></button></form>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -465,10 +288,40 @@
             </div>
             {% endif %}
 
-            <footer class="footer">
-                <p>&copy; 2025 Sistema de Almoxarifado</p>
-            </footer>
+            <footer class="footer"><p>&copy; 2025 Sistema de Almoxarifado</p></footer>
         </div>
     </div>
+
+    <div id="accountModal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <h2>Minha Conta</h2>
+            <form action="{{ url_for('minha_conta') }}" method="POST">
+                <div class="form-group"><label>Novo E-mail</label><input type="email" name="email"></div>
+                <div class="form-group"><label>Nova Senha</label><input type="password" name="senha"></div>
+                <button type="submit" class="btn-submit">Atualizar</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function toggleMenu(){document.getElementById("dropdownMenu").classList.toggle("show");}
+        window.onclick=function(event){
+            if(!event.target.matches('.hamburger-btn')&&!event.target.matches('.fa-bars')){
+                var dd=document.getElementsByClassName("dropdown-menu");
+                for(var i=0;i<dd.length;i++){if(dd[i].classList.contains('show'))dd[i].classList.remove('show');}
+            }
+            if(event.target==document.getElementById('accountModal'))closeModal();
+        }
+        const themeButton=document.getElementById('theme-text'), themeIcon=document.getElementById('theme-icon');
+        if(localStorage.getItem('theme')==='dark'){document.body.classList.add('dark-mode');themeIcon.textContent='☀️';themeButton.textContent='Modo Claro';}
+        function toggleTheme(){
+            document.body.classList.toggle('dark-mode');
+            if(document.body.classList.contains('dark-mode')){localStorage.setItem('theme','dark');themeIcon.textContent='☀️';themeButton.textContent='Modo Claro';}
+            else{localStorage.setItem('theme','light');themeIcon.textContent='🌙';themeButton.textContent='Modo Escuro';}
+        }
+        function openModal(){document.getElementById('accountModal').style.display='flex';}
+        function closeModal(){document.getElementById('accountModal').style.display='none';}
+    </script>
 </body>
 </html>
