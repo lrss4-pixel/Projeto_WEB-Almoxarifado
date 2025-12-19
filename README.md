@@ -48,7 +48,31 @@ Criamos uma imagem ilustrativa de como é as permissões no sistema
 
 <img width="1024" height="329" alt="image" src="https://github.com/user-attachments/assets/0e449b20-ee06-44d9-bb3d-f981d628b095" />
 
+# JWT – Configuração
 
+app.config['JWT_TOKEN_LOCATION'] = ['cookies']
+app.config['JWT_COOKIE_CSRF_PROTECT'] = False
+app.config['JWT_ACCESS_COOKIE_PATH'] = '/'
+
+O token fica salvo em cookie
+Rotas protegidas usam @jwt_required()
+
+### Handlers personalizados redirecionam para /login caso:
+
+*Token ausente
+
+*Token expirado
+
+*Token inválido
+
+# Configuração do Banco de Dados
+
+As configurações são feitas via variáveis de ambiente:
+
+app.config['MYSQL_HOST'] = os.environ.get('MYSQL_HOST', 'db')
+app.config['MYSQL_USER'] = os.environ.get('MYSQL_USER', 'root')
+app.config['MYSQL_PASSWORD'] = os.environ.get('MYSQL_ROOT_PASSWORD', 'admin123')
+app.config['MYSQL_DATABASE'] = os.environ.get('MYSQL_DATABASE', 'almoxarifado_db')
 
 # SEGURITY GROUP
 
@@ -73,6 +97,7 @@ Decidimos criar um IP Elástico, para sempre ser o mesmo IP, sem precisar que o 
 http://13.219.65.108:8000/login
 
 <img width="1121" height="208" alt="image" src="https://github.com/user-attachments/assets/99e6221e-d20d-4caf-9198-a38be707a765" />
+
 
 
 
