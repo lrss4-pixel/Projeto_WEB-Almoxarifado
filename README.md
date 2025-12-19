@@ -15,6 +15,20 @@ Este projeto é uma aplicação web de controle de almoxarifado, desenvolvida em
 -Alertas automáticos de estoque baixo
 
 
+
+# Arquitetura/Tecnologias deste Projeto
+
+Flask → Backend e rotas
+
+MySQL → Banco de dados
+
+JWT (flask-jwt-extended) → Autenticação e autorização
+
+Docker / Docker Compose → Infraestrutura
+
+Microserviço de Email → Alertas de estoque
+
+
 #SEGURITY GROUP
 
 #Criamos um Grupo Seguro para a instância do projeto, com as configurações:
@@ -36,6 +50,7 @@ Este projeto é uma aplicação web de controle de almoxarifado, desenvolvida em
 #http://98.86.104.32:8000/login
 
 <img width="1121" height="208" alt="image" src="https://github.com/user-attachments/assets/99e6221e-d20d-4caf-9198-a38be707a765" />
+
 
 
 
