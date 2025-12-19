@@ -50,12 +50,15 @@ Criamos uma imagem ilustrativa de como é as permissões no sistema
 
 # JWT – Configuração
 
+### Esta é a configuração em código do JWT:
+
 app.config['JWT_TOKEN_LOCATION'] = ['cookies']
 app.config['JWT_COOKIE_CSRF_PROTECT'] = False
 app.config['JWT_ACCESS_COOKIE_PATH'] = '/'
 
-O token fica salvo em cookie
-Rotas protegidas usam @jwt_required()
+#### O token fica salvo em cookie
+
+#### Rotas protegidas usam @jwt_required()
 
 ### Handlers personalizados redirecionam para /login caso:
 
@@ -111,6 +114,7 @@ Decidimos criar um IP Elástico, para sempre ser o mesmo IP, sem precisar que o 
 http://13.219.65.108:8000/login
 
 <img width="1121" height="208" alt="image" src="https://github.com/user-attachments/assets/99e6221e-d20d-4caf-9198-a38be707a765" />
+
 
 
 
