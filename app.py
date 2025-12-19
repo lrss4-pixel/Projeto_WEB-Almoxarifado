@@ -10,6 +10,7 @@ from flask_jwt_extended import (
     unset_jwt_cookies
 )
 from functools import wraps
+from flask_caching import Cache
 
 app = Flask(__name__)
 
@@ -19,11 +20,18 @@ app.config['MYSQL_USER'] = os.environ.get('MYSQL_USER', 'root')
 app.config['MYSQL_PASSWORD'] = os.environ.get('MYSQL_ROOT_PASSWORD', 'admin123')
 app.config['MYSQL_DATABASE'] = os.environ.get('MYSQL_DATABASE', 'almoxarifado_db')
 app.config['SECRET_KEY'] = 'sua_chave_secreta_flask'
+#jwt
 app.config['JWT_SECRET_KEY'] = 'sua_chave_jwt_super_secreta' 
 app.config['JWT_TOKEN_LOCATION'] = ['cookies']
 app.config['JWT_COOKIE_CSRF_PROTECT'] = False 
-
 jwt = JWTManager(app)
+#cache
+app.config['CACHE_TYPE'] = 'FileSystemCache'
+app.config['CACHE_DIR'] = '/tmp/flask_cache' # Pasta temporária do Linux
+app.config['CACHE_DEFAULT_TIMEOUT'] = 300 # 5 minutos
+app.config['CACHE_THRESHOLD'] = 500 
+
+cache = Cache(app)
 
 # --- TRATAMENTO DE ERROS JWT ---
 @jwt.unauthorized_loader
@@ -129,6 +137,16 @@ def get_dados_comuns():
         'usuarios': usuarios  
     }
 
+# --- FUNÇÃO CACHE
+@cache.cached(timeout=300, key_prefix='dados_dashboard')
+def get_dados_comuns_cache():
+    """
+    Esta função verifica se já existe o resultado salvo no arquivo.
+    Se existir, retorna o arquivo (rápido).
+    Se não, roda a get_dados_comuns(), salva no arquivo e retorna.
+    """
+    return get_dados_comuns()
+
 # --- ROTAS DE AUTENTICAÇÃO ---
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -172,6 +190,7 @@ def minha_conta():
             sh = generate_password_hash(nova_senha)
             cursor.execute("UPDATE usuarios SET senha = %s WHERE id = %s", (sh, usuario_id))
         conn.commit()
+        cache.delete('dados_dashboard')
     except: pass
     cursor.close()
     conn.close()
@@ -184,10 +203,12 @@ def index():
     claims = get_jwt()
     user_cargo = claims.get('cargo', 'vendedor')
     
+    # Lógica de Abas
     active_tab = request.args.get('tab', 'dashboard') 
     if user_cargo == 'vendedor': active_tab = 'dashboard'
     if user_cargo != 'admin' and active_tab == 'usuarios': active_tab = 'dashboard'
 
+    # Lógica de Edição
     edit_produto_id = request.args.get('edit_produto')
     edit_fornecedor_id = request.args.get('edit_fornecedor')
     edit_local_id = request.args.get('edit_local')
@@ -204,6 +225,7 @@ def index():
     cursor = conn.cursor(dictionary=True)
     cursor.execute("USE almoxarifado_db")
     
+    # Buscas pontuais (Edição não usa cache pois precisa ser imediato)
     if edit_produto_id:
         cursor.execute("SELECT * FROM produtos WHERE id = %s", (edit_produto_id,))
         produto_para_editar = cursor.fetchone()
@@ -232,7 +254,8 @@ def index():
     cursor.close()
     conn.close()
 
-    dados = get_dados_comuns()
+    # Chamamos a versão cacheada. Se o cache existir, nem bate no banco.
+    dados = get_dados_comuns_cache()
     
     return render_template('almoxarifado_dashboard.html', 
                            active_tab=active_tab, 
@@ -256,6 +279,7 @@ def atualizar_email_alerta():
     try:
         cursor.execute("REPLACE INTO configuracoes (chave, valor) VALUES ('email_alerta', %s)", (novo_email,))
         conn.commit()
+        cache.delete('dados_dashboard')
     except Exception as e: print(f"Erro config: {e}")
     finally: cursor.close(); conn.close()
     return redirect(url_for('index', tab='usuarios'))
@@ -268,6 +292,8 @@ def adicionar_local():
     try:
         cursor.execute("INSERT INTO locais (nome) VALUES (%s)", (request.form.get('nome'),))
         conn.commit()
+
+        cache.delete('dados_dashboard')
     except: pass
     cursor.close(); conn.close()
     return redirect(url_for('index', tab='locais'))
@@ -278,6 +304,7 @@ def editar_local(local_id):
     conn = mysql.connection; cursor = conn.cursor(); cursor.execute("USE almoxarifado_db")
     cursor.execute("UPDATE locais SET nome=%s WHERE id=%s", (request.form.get('nome'), local_id))
     conn.commit(); cursor.close(); conn.close()
+    cache.delete('dados_dashboard')
     return redirect(url_for('index', tab='locais'))
 
 @app.route('/locais/remover/<int:local_id>', methods=['POST'])
@@ -287,6 +314,7 @@ def remover_local(local_id):
     try:
         cursor.execute("DELETE FROM locais WHERE id=%s", (local_id,))
         conn.commit()
+        cache.delete('dados_dashboard')
     except: pass
     cursor.close(); conn.close()
     return redirect(url_for('index', tab='locais'))
@@ -312,6 +340,7 @@ def adicionar_produto():
     cursor.execute("INSERT INTO produtos (nome, quantidade, local_id, estoque_min, fornecedor_id, gestor_id) VALUES (%s, %s, %s, %s, %s, %s)", 
                    (nome, quantidade, local_id, estoque_min, fornecedor_id, gestor_id))
     conn.commit()
+    cache.delete('dados_dashboard')
     id_prod = cursor.lastrowid
     
     if int(quantidade) < int(estoque_min):
@@ -361,6 +390,7 @@ def editar_produto(produto_id):
                        (nome_prod, nova_quantidade, local_id, novo_minimo, forn, gest, produto_id))
     
     conn.commit()
+    cache.delete('dados_dashboard')
 
     if (nova_quantidade < novo_minimo) and (qtd_antiga >= novo_minimo):
         cursor.execute("SELECT valor FROM configuracoes WHERE chave = 'email_alerta'")
@@ -377,6 +407,7 @@ def remover_produto(produto_id):
     conn = mysql.connection; cursor = conn.cursor(); cursor.execute("USE almoxarifado_db")
     cursor.execute("DELETE FROM produtos WHERE id = %s", (produto_id,))
     conn.commit(); cursor.close(); conn.close()
+    cache.delete('dados_dashboard')
     return redirect(url_for('index'))
 
 @app.route('/realizar_saida/<int:produto_id>', methods=['POST'])
@@ -398,6 +429,7 @@ def realizar_saida(produto_id):
         novo_estoque = produto['quantidade'] - qtd_saida
         cursor.execute("UPDATE produtos SET quantidade = %s WHERE id = %s", (novo_estoque, produto_id))
         conn.commit()
+        cache.delete('dados_dashboard')
         
         if (novo_estoque < produto['estoque_min']) and (produto['quantidade'] >= produto['estoque_min']):
             cursor.execute("SELECT valor FROM configuracoes WHERE chave = 'email_alerta'")
@@ -416,6 +448,7 @@ def adicionar_fornecedor():
     cursor.execute("INSERT INTO fornecedores (nome, contato_nome, telefone, email) VALUES (%s, %s, %s, %s)", 
                    (request.form.get('nome'), request.form.get('contato_nome'), request.form.get('telefone'), request.form.get('email')))
     conn.commit(); cursor.close(); conn.close()
+    cache.delete('dados_dashboard')
     return redirect(url_for('index', tab='fornecedores'))
 
 @app.route('/fornecedores/editar/<int:fornecedor_id>', methods=['POST'])
@@ -425,6 +458,7 @@ def editar_fornecedor(fornecedor_id):
     cursor.execute("UPDATE fornecedores SET nome=%s, contato_nome=%s, telefone=%s, email=%s WHERE id=%s", 
                    (request.form.get('nome'), request.form.get('contato_nome'), request.form.get('telefone'), request.form.get('email'), fornecedor_id))
     conn.commit(); cursor.close(); conn.close()
+    cache.delete('dados_dashboard')
     return redirect(url_for('index', tab='fornecedores'))
 
 @app.route('/fornecedores/remover/<int:fornecedor_id>', methods=['POST'])
@@ -446,6 +480,7 @@ def adicionar_usuario():
         cursor.execute("INSERT INTO usuarios (nome, email, senha, cargo) VALUES (%s, %s, %s, %s)",
                        (request.form.get('nome'), request.form.get('email'), sh, request.form.get('cargo')))
         conn.commit()
+        cache.delete('dados_dashboard')
         threading.Thread(target=enviar_boas_vindas_thread, args=[request.form.get('nome'), request.form.get('email'), request.form.get('senha')]).start()
     except Exception as e: print(f"Erro: {e}")
     finally: cursor.close(); conn.close()
@@ -464,6 +499,7 @@ def editar_usuario(usuario_id):
             cursor.execute("UPDATE usuarios SET nome=%s, email=%s, cargo=%s WHERE id=%s",
                            (request.form.get('nome'), request.form.get('email'), request.form.get('cargo'), usuario_id))
         conn.commit()
+        cache.delete('dados_dashboard')
     except: pass
     cursor.close(); conn.close()
     return redirect(url_for('index', tab='usuarios'))
@@ -481,6 +517,7 @@ def remover_usuario(usuario_id):
                 return redirect(url_for('index', tab='usuarios', erro_msg="ERRO: Impossível excluir o único Admin."))
         cursor.execute("DELETE FROM usuarios WHERE id = %s", (usuario_id,))
         conn.commit()
+        cache.delete('dados_dashboard')
     except Exception as e: print(e)
     finally: cursor.close(); conn.close()
     return redirect(url_for('index', tab='usuarios'))
