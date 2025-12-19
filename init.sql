@@ -32,5 +32,6 @@ CREATE TABLE IF NOT EXISTS produtos (
 );
 
 
--- Inserir um usuário administrador padrão para você conseguir logar/testar
-INSERT INTO usuarios (nome, email, senha) VALUES ('Admin', 'admin@admin.com', 'admin');
+-- Inserir um usuário administrador com senha HASH (senha: admin)
+INSERT INTO usuarios (nome, email, senha, cargo) 
+VALUES ('Admin', 'admin@admin.com', 'scrypt:32768:8:1$J7tSdd2I1tGZzuhn$8ee373f4ac13fa6a5a3cc9a2f5b8685fe46aa120c95cc435e497835f752620662891f42b70f8751fa1e31456481079a861c82e9a0a72f437a429a341a55b3b40', 'admin');
