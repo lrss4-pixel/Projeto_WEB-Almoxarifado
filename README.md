@@ -2,17 +2,17 @@
 
 Este projeto é uma aplicação web de controle de almoxarifado, desenvolvida em Python com Flask, utilizando MySQL, Docker e autenticação JWT baseada em cookies.
 
-#O sistema permite:
+### O sistema permite:
 
--Controle de produtos e estoque
+##### -Controle de produtos e estoque
 
--Cadastro de fornecedores
+##### -Cadastro de fornecedores
 
--Gestão de usuários com níveis de permissão (admin, gestor, vendedor)
+##### -Gestão de usuários com níveis de permissão (admin, gestor, vendedor)
 
--Login seguro com senha criptografada
+##### -Login seguro com senha criptografada
 
--Alertas automáticos de estoque baixo
+##### -Alertas automáticos de estoque baixo
 
 
 # Arquitetura/Tecnologias deste Projeto
@@ -36,11 +36,11 @@ O login gera um JWT armazenado em cookie HTTPOnly
 
 O token contém claims com:
 
-#ID do usuário
+##### ID do usuário
 
-#Nome
+##### Nome
 
-#Cargo (admin / gestor / vendedor)
+##### Cargo (admin / gestor / vendedor)
 
 ### Cargos e Permissões
 
@@ -59,11 +59,11 @@ Rotas protegidas usam @jwt_required()
 
 ### Handlers personalizados redirecionam para /login caso:
 
-*Token ausente
+##### Token ausente
 
-*Token expirado
+##### Token expirado
 
-*Token inválido
+##### Token inválido
 
 # Configuração do Banco de Dados
 
@@ -111,6 +111,7 @@ Decidimos criar um IP Elástico, para sempre ser o mesmo IP, sem precisar que o 
 http://13.219.65.108:8000/login
 
 <img width="1121" height="208" alt="image" src="https://github.com/user-attachments/assets/99e6221e-d20d-4caf-9198-a38be707a765" />
+
 
 
 
