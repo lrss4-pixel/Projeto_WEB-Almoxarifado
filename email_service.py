@@ -5,7 +5,7 @@ from email.message import EmailMessage
 from flask import Flask, request, jsonify
 
 # Configurações
-EMAIL_ORIGEM = "audemarioweb@gmail.com" 
+EMAIL_ORIGEM = "almoxarifadoprojweb@gmail.com" 
 EMAIL_SENHA = os.environ.get("GMAIL_APP_SENHA")
 
 # Este será o e-mail padrão para alertas de sistema (estoque baixo), 
