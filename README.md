@@ -1,5 +1,18 @@
 # Projeto WEB Almoxarifado - Final
-# Atualizações que foram feitas locais, agora com upload dentro do git.
+
+Este projeto é uma aplicação web de controle de almoxarifado, desenvolvida em Python com Flask, utilizando MySQL, Docker e autenticação JWT baseada em cookies.
+
+O sistema permite:
+
+Controle de produtos e estoque
+
+Cadastro de fornecedores
+
+Gestão de usuários com níveis de permissão (admin, gestor, vendedor)
+
+Login seguro com senha criptografada
+
+Alertas automáticos de estoque baixo
 
 
 #SEGURITY GROUP
@@ -23,5 +36,6 @@
 #http://98.86.104.32:8000/login
 
 <img width="1121" height="208" alt="image" src="https://github.com/user-attachments/assets/99e6221e-d20d-4caf-9198-a38be707a765" />
+
 
 
