@@ -70,6 +70,18 @@ app.config['JWT_ACCESS_COOKIE_PATH'] = '/'
 
 ##### Token inválido
 
+# Criação Automática do Usuário Admin
+
+## Na inicialização do sistema:
+
+### inicializar_admin()
+
+## Se não existir um admin, o sistema cria:
+
+### Email: admin@sistema.com
+### Senha: admin123
+### Cargo: admin
+
 # Configuração do Banco de Dados
 
 As configurações são feitas via variáveis de ambiente:
@@ -169,6 +181,7 @@ Boas práticas com Flask
 Uso real de JWT + Cookies
 
 Integração com microserviços
+
 
 
 
