@@ -140,9 +140,32 @@ Faz o seguinte:
 #### Chama microserviço de email
 
 
+# CI/CD com GitHub Actions + Docker + AWS EC2
+
+Este projeto utiliza um pipeline de CI/CD (Integração Contínua e Deploy Contínuo) para automatizar o processo de atualização da aplicação em produção.
+
+Sempre que há um push no repositório, o sistema é automaticamente atualizado no servidor AWS EC2, utilizando Docker.
+
+## Estrutura do CI/CD no Projeto
+
+Foi criada a seguinte estrutura dentro do repositório:
+
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/d867de2f-3618-4618-9bcf-1499872d99e4" />
 
 
+### Esse arquivo é responsável por definir todas as etapas do deploy automático
 
+## Configuração de Segurança (Secrets)
+
+Para garantir segurança no acesso ao servidor EC2, foram configuradas variáveis secretas no GitHub:
+
+EC2_HOST: Endereço IP público da instância EC2
+
+EC2_USER: Usuário padrão da instância (ex: ec2-user)
+
+EC2_SSH_KEY: Chave privada SSH usada para autenticação
+
+##A implementação do CI/CD neste projeto permite que qualquer alteração enviada ao repositório seja automaticamente refletida no servidor, tornando o processo de desenvolvimento mais ágil, seguro e profissional.
 
 # SEGURITY GROUP
 
@@ -181,27 +204,3 @@ Boas práticas com Flask
 Uso real de JWT + Cookies
 
 Integração com microserviços
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
