@@ -169,7 +169,7 @@ EC2_SSH_KEY: Chave privada SSH usada para autenticação
 
 # SEGURITY GROUP
 
-Criamos um Grupo Seguro para a instância do projeto, com as configurações:
+Criamos um Grupo Seguro para a instância do projeto, com as configurações (figuras ilustrativas abaixo:
 
 <img width="1130" height="357" alt="image" src="https://github.com/user-attachments/assets/e1e637b4-b5d6-48a5-89bb-ea31ac69c944" />
 
@@ -204,3 +204,4 @@ Boas práticas com Flask
 Uso real de JWT + Cookies
 
 Integração com microserviços
+
